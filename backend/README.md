@@ -29,15 +29,15 @@ Variables dashboard; file `.env` tidak perlu ikut ke image produksi.
 | `SUPABASE_SERVICE_ROLE_KEY` | — | ✅ | service_role secret. Bypass RLS — **jangan** dipakai di frontend/bot |
 | `APP_ENV` | `development` | prod: `production` | Di `production`, endpoint bot tanpa key → `503` |
 | `DISCORD_BOT_API_KEY` | kosong | prod: ✅ | Rahasia service-to-service (`X-API-Key`). Dipakai juga oleh bot (`REDJOHN_API_KEY`) dan route handler frontend |
-| `GUARDIANAI_CORS_ORIGINS` | `http://localhost:3000` | ✅ | Origin frontend, pisah koma. Contoh: `https://redjohn.app` |
+| `GUARDIANAI_CORS_ORIGINS` | `http://localhost:3000` | ✅ | Origin frontend, pisah koma. Contoh: `https://redjohn.app`. Buka frontend lewat `127.0.0.1:3000`? Tambahkan `http://127.0.0.1:3000` juga |
 | `NEWS_SCHEDULER` | `false` | — | `true` = proses API ikut menjalankan scraper terjadwal |
 | `NEWS_RUN_ON_START` | `false` | — | Jalankan sekali saat boot, tidak menunggu interval |
 | `NEWS_INTERVAL_HOURS` | `6` | — | Jarak antar harvest |
 | `NEWS_BROADCAST_SCHEDULER` | `false` | — | `true` = broadcast 5 berita acak pukul 05:00/13:00/20:00 WITA; aktifkan di satu proses |
 | `LEADERBOARD_SCHEDULER` | `false` | — | `true` = cron pengumuman klasemen kuis ke Discord tiap `LEADERBOARD_HOUR` WIB |
 | `LEADERBOARD_HOUR` | `21` | — | Jam WIB pengumuman **sekaligus** reset periode klasemen |
-| `OPENROUTER_API_KEY` | kosong | — | Untuk generate soal AI (belum terpakai di kode). Rahasia |
-| `OPENROUTER_MODEL` | — | — | Model default generator soal (belum terpakai di kode) |
+| `OPENROUTER_API_KEY` | kosong | — | Untuk generate soal AI dari berita (`POST /api/quiz/admin/generate-daily`). Rahasia |
+| `OPENROUTER_MODEL` | — | — | Model generator soal. Kosong → endpoint membalas `503` |
 | `PORT` | `8000` | hosting | Dibaca `CMD` Dockerfile |
 
 Tidak ada env admin. Admin kuis ditentukan `public.profiles.role` (migrasi 007) — ubah lewat
@@ -69,6 +69,7 @@ Semua di bawah prefix `/api` kecuali health.
 | POST | `/quiz/questions/{id}/answer` | opsional `Authorization` | Nilai jawaban + `points_awarded`; tercatat ke klasemen bila login |
 | GET | `/quiz/leaderboard?limit=20` | — | Klasemen periode berjalan + `resets_at` |
 | GET/POST | `/quiz/admin/questions` | `Authorization` (admin) | CRUD soal admin |
+| POST | `/quiz/admin/generate-daily` | `Authorization` (admin) | 10 draf soal dari berita terverifikasi. Tidak menyimpan; admin tinjau lalu simpan |
 | PATCH/DELETE | `/quiz/admin/questions/{id}` | `Authorization` (admin) | Edit / arsipkan soal |
 | GET | `/health` | — | `ok` / `degraded` (model tidak termuat) |
 

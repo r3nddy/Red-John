@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import QuestionForm, { emptyQuestion } from "@/components/quiz/admin/QuestionForm";
 import QuizLeaderboardBroadcast from "@/components/quiz/admin/QuizLeaderboardBroadcast";
-import { archiveQuizQuestion, createQuizQuestion, listAdminQuestions, updateQuizQuestion, type GameRound } from "@/lib/quiz";
+import { archiveQuizQuestion, createQuizQuestion, generateDailyQuizDrafts, listAdminQuestions, updateQuizQuestion, type GameRound, type QuizDraft } from "@/lib/quiz";
 import { supabase } from "@/lib/supabase";
 
 // `embedded` dipakai panel /admin: tanpa shell halaman sendiri (judul, back link,
@@ -17,6 +17,9 @@ export default function QuizAdminClient({ embedded = false }: { embedded?: boole
   const [editing, setEditing] = useState<GameRound | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [drafts, setDrafts] = useState<QuizDraft[] | null>(null);
+  const [editingDraftIndex, setEditingDraftIndex] = useState<number | null>(null);
+  const [generating, setGenerating] = useState(false);
 
   const load = useCallback(async (accessToken: string) => {
     setLoading(true); setError("");
@@ -41,13 +44,37 @@ export default function QuizAdminClient({ embedded = false }: { embedded?: boole
     } catch { setError("Supabase tidak dapat dihubungi. Periksa konfigurasi dan koneksi."); }
     finally { setLoading(false); }
   }
+  async function generate() {
+    if (drafts?.length && !confirm("Ganti draf yang belum disimpan dengan hasil generate baru?")) return;
+    setGenerating(true); setError("");
+    try {
+      const result = await generateDailyQuizDrafts(token);
+      setDrafts(result.drafts); setEditingDraftIndex(null);
+    } catch (err) { setError(err instanceof Error ? err.message : "Gagal generate soal."); }
+    finally { setGenerating(false); }
+  }
   async function save(draft: GameRound) {
     const { id: _id, created_at: _createdAt, updated_at: _updatedAt, input_prompt: _inputPrompt, input_placeholder: _inputPlaceholder, ...payload } = draft;
     void [_id, _createdAt, _updatedAt, _inputPrompt, _inputPlaceholder];
-    if (editing?.id) await updateQuizQuestion(editing.id, payload, token);
-    else await createQuizQuestion(payload, token);
-    setEditing(null); await load(token);
+    if (editing?.id) {
+      await updateQuizQuestion(editing.id, payload, token);
+    } else if (editingDraftIndex !== null) {
+      const { round_number: _round, ...generated } = payload;
+      void _round;
+      await createQuizQuestion(generated, token);
+      setDrafts((old) => old?.filter((_, i) => i !== editingDraftIndex) ?? null);
+    } else {
+      await createQuizQuestion(payload, token);
+    }
+    setEditing(null); setEditingDraftIndex(null); await load(token);
   }
+  function reviewDraft(index: number) {
+    const draft = drafts?.[index];
+    if (!draft) return;
+    setEditing({ ...draft.question, id: "" });
+    setEditingDraftIndex(index);
+  }
+  function closeForm() { setEditing(null); setEditingDraftIndex(null); }
   async function archive(question: GameRound) {
     if (!confirm(`Arsipkan “${question.title}”? Soal tidak akan tampil untuk pemain.`)) return;
     setError("");
@@ -59,22 +86,33 @@ export default function QuizAdminClient({ embedded = false }: { embedded?: boole
     {!token ? <form onSubmit={login} className="mx-auto mt-12 max-w-md space-y-4 rounded-2xl border border-white/15 bg-white/[0.03] p-6"><h2 className="text-lg font-semibold">Login admin Supabase</h2>{error && <p role="alert" className="text-sm text-red-300">{error}</p>}<input type="email" required placeholder="Email admin" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border border-white/15 bg-black/30 p-3 text-sm" /><input type="password" required placeholder="Password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-lg border border-white/15 bg-black/30 p-3 text-sm" /><button disabled={loading || !supabase} className="w-full rounded-lg bg-white p-3 text-sm font-semibold text-black disabled:opacity-50">{loading ? "Memproses…" : "Masuk"}</button></form> : <>
       {error && <div role="alert" className="mt-5 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
       <div className="mt-6 flex flex-wrap justify-end gap-2">
-        {/* TODO(logika): hubungkan ke endpoint generate soal AI dari berita penipuan terbaru. */}
         <button
           type="button"
-          onClick={() => setError("Generate soal dari berita terbaru belum tersedia.")}
-          className="rounded-lg border border-amber-400/40 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-200 hover:bg-amber-400/20"
+          onClick={() => void generate()}
+          disabled={generating}
+          className="rounded-lg border border-amber-400/40 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-200 hover:bg-amber-400/20 disabled:opacity-50"
         >
-          ✨ Generate Soal Hari Ini (dari berita)
+          {generating ? "Menyusun 10 soal…" : "✨ Generate Soal Hari Ini (dari berita)"}
         </button>
-        <button onClick={() => setEditing(emptyQuestion(Math.max(0, ...questions.map((q) => q.round_number)) + 1))} className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black">+ Tambah soal</button>
+        <button onClick={() => { setEditingDraftIndex(null); setEditing(emptyQuestion(Math.max(0, ...questions.map((q) => q.round_number)) + 1)); }} className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black">+ Tambah soal</button>
       </div>
+      {drafts && drafts.length > 0 && <section className="mt-6 rounded-xl border border-amber-400/20 bg-amber-400/[0.04] p-4">
+        <h2 className="text-sm font-semibold text-amber-200">Draf {drafts.length} soal · belum disimpan</h2>
+        <p className="mt-1 text-xs text-white/40">Tinjau dan simpan satu per satu. Default status: Arsip.</p>
+        <div className="mt-3 space-y-2">{drafts.map((d, i) => <div key={i} className="flex flex-wrap items-center gap-2 rounded-lg border border-white/10 p-3">
+          <span className="font-mono text-xs text-white/40">#{d.suggested_round_number}</span>
+          <div className="min-w-0 flex-1"><p className="text-sm font-medium">{d.question.title}</p><p className="text-xs text-white/40">{d.question.threat_type} · <a href={d.source_url} target="_blank" rel="noopener noreferrer" className="underline hover:text-white/60">sumber berita</a></p></div>
+          <span className="rounded-full border border-white/10 px-2 py-0.5 text-xs text-white/40">Belum terbit</span>
+          <button onClick={() => reviewDraft(i)} className="rounded-lg border border-white/15 px-3 py-1.5 text-xs hover:bg-white/10">Tinjau</button>
+          <button onClick={() => setDrafts((old) => old?.filter((_, j) => j !== i) ?? null)} className="rounded-lg border border-red-400/20 px-3 py-1.5 text-xs text-red-300 hover:bg-red-400/10">Hapus</button>
+        </div>)}</div>
+      </section>}
       {loading ? <p className="mt-8 text-white/60">Memuat…</p> : <div className="mt-4 overflow-hidden rounded-xl border border-white/10">{questions.map((q) => <article key={q.id} className="flex flex-wrap items-center gap-3 border-b border-white/10 p-4 last:border-0">
         <span className="font-mono text-sm text-white/50">#{q.round_number}</span><div className="min-w-0 flex-1"><h2 className="font-semibold">{q.title}</h2><p className="text-xs text-white/50">{{ multiple_choice: "Pilihan ganda", binary: "Benar/salah", text_input: "Teks" }[q.kind]} · {q.is_active ? "Aktif" : "Arsip"}</p></div>
-        <button onClick={() => setEditing(q)} className="rounded-lg border border-white/15 px-3 py-1.5 text-xs">Edit</button><button disabled={!q.is_active} onClick={() => void archive(q)} className="rounded-lg border border-red-400/30 px-3 py-1.5 text-xs text-red-300 disabled:opacity-30">Arsip</button>
+        <button onClick={() => { setEditingDraftIndex(null); setEditing(q); }} className="rounded-lg border border-white/15 px-3 py-1.5 text-xs">Edit</button><button disabled={!q.is_active} onClick={() => void archive(q)} className="rounded-lg border border-red-400/30 px-3 py-1.5 text-xs text-red-300 disabled:opacity-30">Arsip</button>
       </article>)}{questions.length === 0 && <p className="p-6 text-sm text-white/50">Belum ada soal.</p>}</div>}
     </>}
-    {editing && <QuestionForm initial={editing} onCancel={() => setEditing(null)} onSave={save} />}
+    {editing && <QuestionForm initial={editing} lockRoundNumber={editingDraftIndex !== null} onCancel={closeForm} onSave={save} />}
   </>;
 
   if (embedded) return body;

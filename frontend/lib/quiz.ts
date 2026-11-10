@@ -51,8 +51,12 @@ export async function request<T>(path: string, init?: RequestInit, token?: strin
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
-  } catch {
-    throw new Error(`Backend tidak dapat dihubungi (${API_BASE}${path}).`);
+  } catch (err) {
+    const reason = err instanceof Error && err.name === "AbortError" ? "timeout" : "jaringan/CORS";
+    throw new Error(
+      `Backend tidak dapat dihubungi (${API_BASE}${path}) — ${reason}. ` +
+        `Cek log backend: error 500 tanpa header CORS juga muncul sebagai galat jaringan.`,
+    );
   }
   if (!res.ok) {
     const body = await res.text().catch(() => "");
@@ -63,7 +67,18 @@ export async function request<T>(path: string, init?: RequestInit, token?: strin
   return res.json() as Promise<T>;
 }
 
+export type QuizDraft = {
+  source_news_id: string;
+  source_url: string;
+  suggested_round_number: number;
+  question: GameRound;
+};
+
 export const listQuizQuestions = () => request<GameRound[]>("/api/quiz/questions");
+export const generateDailyQuizDrafts = (token: string) =>
+  request<{ drafts: QuizDraft[]; model: string }>(
+    "/api/quiz/admin/generate-daily", { method: "POST" }, token,
+  );
 export const listAdminQuestions = (token: string) =>
   request<GameRound[]>("/api/quiz/admin/questions", undefined, token);
 export const createQuizQuestion = (input: Partial<GameRound>, token: string) =>

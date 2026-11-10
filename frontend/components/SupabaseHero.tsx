@@ -33,13 +33,6 @@ export default function SupabaseHero() {
               >
                 Mulai Pemindaian
               </Link>
-              <Link
-                href="/tentang-keamanan"
-                className="inline-flex items-center justify-center px-4 py-2 rounded-md bg-[#161817] border border-white/10 text-zinc-300 font-medium text-[14px] hover:border-white/20 hover:text-white hover:bg-white/[0.04] transition-all"
-                style={{ letterSpacing: "-0.01em" }}
-              >
-                Pelajari Keamanan
-              </Link>
             </div>
           </div>
 
@@ -49,7 +42,7 @@ export default function SupabaseHero() {
               className="text-[15px] sm:text-[16px] text-[#A0A0A0] leading-[1.65]"
               style={{ fontWeight: 400 }}
             >
-              Mulai dari pemindaian pesan mencurigakan. Pelajari modus penipuan digital, ikuti simulasi kognitif, dan akses playbook mitigasi untuk melindungi diri sebelum uang atau data pribadimu hilang.
+              Mulai dari pemindaian pesan mencurigakan. Pelajari modus penipuan digital, ikuti simulasi kognitif, dan pantau radar berita terkini untuk melindungi diri sebelum uang atau data pribadimu hilang.
             </p>
           </div>
 

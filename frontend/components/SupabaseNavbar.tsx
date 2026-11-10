@@ -11,11 +11,8 @@ import UserDropdown from "./UserDropdown";
 export const NAV_LINKS = [
   { href: "/pemindai", label: "Pemindai Pesan" },
   { href: "/lapor-cepat", label: "Lapor Cepat" },
-  { href: "/quiz", label: "Simulasi Kognitif" },
-  { href: "/berita", label: "Radar Berita" },
-  { href: "/act", label: "Playbook" },
-  { href: "/learn", label: "Intelijen" },
-  { href: "/tentang-keamanan", label: "Transparansi" },
+  { href: "/quiz", label: "Quiz" },
+  { href: "/berita", label: "Berita" },
 ];
 
 export default function SupabaseNavbar() {

@@ -103,5 +103,17 @@ class Settings:
     )
     news_user_agent: str = "RedJohn-news/2.0 (+edukasi penipuan digital)"
 
+    # --- generator soal kuis dari berita (OpenRouter) ---
+    openrouter_api_key: str = field(
+        default_factory=lambda: os.environ.get("OPENROUTER_API_KEY", "")
+    )
+    openrouter_model: str = field(
+        default_factory=lambda: os.environ.get("OPENROUTER_MODEL", "")
+    )
+    openrouter_base_url: str = "https://openrouter.ai/api/v1/chat/completions"
+    openrouter_timeout_seconds: int = 90
+    quiz_generate_count: int = 10
+    quiz_generate_news_limit: int = 10
+
 
 settings = Settings()

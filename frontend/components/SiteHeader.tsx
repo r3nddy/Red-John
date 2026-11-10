@@ -80,7 +80,7 @@ export default function SiteHeader() {
               onClick={playClick}
               className="px-3.5 py-2 rounded hover:text-white hover:bg-white/[0.06] transition-colors flex items-center gap-1"
             >
-              <span>Radar Berita</span>
+              <span>Berita</span>
             </Link>
 
             <Link
@@ -104,23 +104,7 @@ export default function SiteHeader() {
               onClick={playClick}
               className="px-3.5 py-2 rounded hover:text-white hover:bg-white/[0.06] transition-colors"
             >
-              Simulasi Kognitif
-            </Link>
-
-            <Link
-              href="/act"
-              onClick={playClick}
-              className="px-3.5 py-2 rounded hover:text-white hover:bg-white/[0.06] transition-colors"
-            >
-              Playbook
-            </Link>
-
-            <Link
-              href="/learn"
-              onClick={playClick}
-              className="px-3.5 py-2 rounded hover:text-white hover:bg-white/[0.06] transition-colors"
-            >
-              Intelijen
+              Quiz
             </Link>
           </nav>
         </div>
@@ -190,12 +174,10 @@ export default function SiteHeader() {
         <div className="lg:hidden mt-2 mx-auto max-w-[1340px] rounded-2xl bg-[#1c1c1c]/98 border border-white/10 p-5 backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 shadow-2xl">
           <div className="flex flex-col gap-2">
             {[
-              { href: "/berita", label: "Radar Berita" },
+              { href: "/berita", label: "Berita" },
               { href: "/pemindai", label: "Pemindai Pesan" },
               { href: "/lapor-cepat", label: "Lapor cepat" },
-              { href: "/quiz", label: "Simulasi Kognitif" },
-              { href: "/act", label: "Playbook" },
-              { href: "/learn", label: "Intelijen" },
+              { href: "/quiz", label: "Quiz" },
             ].map((item) => (
               <Link
                 key={item.href}

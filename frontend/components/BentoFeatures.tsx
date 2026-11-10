@@ -369,14 +369,6 @@ export default function BentoFeatures() {
 
         </div>
 
-        {/* Footer platform statement */}
-        <div className="mt-14 text-center">
-          <p className="text-sm text-[#A0A0A0]">
-            <strong className="text-white font-semibold">Use one or all.</strong>{" "}
-            Best of breed products. Integrated as a platform.
-          </p>
-        </div>
-
       </div>
     </section>
   );

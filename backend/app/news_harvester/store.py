@@ -169,6 +169,31 @@ async def list_reports(
     return list(response.data or []), int(response.count or 0)
 
 
+async def generator_reports(limit: int) -> list[dict[str, Any]]:
+    """Berita terverifikasi hasil scraping untuk generator soal. Deskripsi penuh.
+
+    Filter: status=verified, source_type=scraped, source_url tidak null.
+    Urut published_at desc nulls last, lalu created_at desc.
+    Berita tanpa tanggal valid tetap diambil dengan published_at=None;
+    jangan diam-diam dianggap berita hari ini.
+    """
+    sb = get_store()
+    if sb is None:
+        return []
+    result = await (
+        sb.table(TABLE)
+        .select("id,title,description,category,source_url,source_media,published_at")
+        .eq("status", "verified")
+        .eq("source_type", "scraped")
+        .not_.is_("source_url", "null")
+        .order("published_at", desc=True, nullsfirst=False)
+        .order("created_at", desc=True)
+        .limit(limit)
+        .execute()
+    )
+    return list(result.data or [])
+
+
 async def count_reports() -> int:
     """Jumlah berita terverifikasi — dasar pemilihan offset acak."""
     sb = get_store()

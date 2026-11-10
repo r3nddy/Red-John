@@ -79,11 +79,6 @@ export default function StudioFooter() {
                   &bull; Simulasi Kognitif: Red John vs Jane
                 </Link>
               </li>
-              <li>
-                <Link href="/act" className="hover:text-white transition-colors">
-                  &bull; Playbook Mitigasi Darurat
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -94,13 +89,6 @@ export default function StudioFooter() {
             <p className="leading-relaxed mb-3">
               Tanpa penyimpanan telemetri data. Tidak ada pesan pribadi, URL sensitif, atau nomor kontak yang dikoleksi ke server pihak ketiga.
             </p>
-            <Link
-              href="/tentang-keamanan"
-              className="text-white hover:text-zinc-300 transition-colors inline-flex items-center gap-1 font-semibold"
-            >
-              <span>Arsitektur Privasi Klien</span>
-              <span>&rarr;</span>
-            </Link>
           </div>
 
           <div>

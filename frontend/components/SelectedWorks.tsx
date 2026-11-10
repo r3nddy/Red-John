@@ -60,17 +60,6 @@ const WORKS: WorkItem[] = [
     href: "/berita",
     status: "RADAR AKTIF",
   },
-  {
-    id: "act",
-    number: "05",
-    title: "MATRIKS MITIGASI DARURAT",
-    category: "TANGGAP INSIDEN",
-    description:
-      "Buku saku tanggap darurat: pemblokiran rekening bank, pemulihan kartu SIM, kanal lapor resmi kepolisian, dan pengamanan bukti digital.",
-    tag: "PLAYBOOK DARURAT",
-    href: "/act",
-    status: "SIAP DARURAT",
-  },
 ];
 
 export default function SelectedWorks() {

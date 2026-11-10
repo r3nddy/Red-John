@@ -20,8 +20,9 @@ export function emptyQuestion(number: number): GameRound {
     text_config: null, debrief: { summary: "", safe_action: "", red_john_tactic: "" }, is_active: true };
 }
 
-export default function QuestionForm({ initial, onSave, onCancel }: {
+export default function QuestionForm({ initial, onSave, onCancel, lockRoundNumber = false }: {
   initial: GameRound; onSave: (value: GameRound) => Promise<void>; onCancel: () => void;
+  lockRoundNumber?: boolean;
 }) {
   const [draft, setDraft] = useState(initial);
   const [saving, setSaving] = useState(false);
@@ -45,7 +46,7 @@ export default function QuestionForm({ initial, onSave, onCancel }: {
       <div className="flex items-center justify-between"><h2 className="text-xl font-bold">{initial.id ? "Edit soal" : "Tambah soal"}</h2><button type="button" onClick={onCancel} aria-label="Tutup" className="text-2xl">×</button></div>
       {error && <p role="alert" className="rounded-lg bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
       <div className="grid gap-3 sm:grid-cols-3">
-        <label className={label}>Nomor<input className={field} type="number" min={1} required value={draft.round_number} onChange={(e) => set({ round_number: Number(e.target.value) })} /></label>
+        <label className={label}>Nomor<input className={field} type="number" min={1} required disabled={lockRoundNumber} value={draft.round_number} onChange={(e) => set({ round_number: Number(e.target.value) })} />{lockRoundNumber && <span className="text-xs font-normal text-white/40">Dialokasikan otomatis saat simpan.</span>}</label>
         <label className={label}>Tipe<select className={field} value={draft.kind} onChange={(e) => changeKind(e.target.value as GameRound["kind"])}><option value="multiple_choice">Pilihan ganda</option><option value="binary">Benar / salah</option><option value="text_input">Jawaban teks</option></select></label>
         <label className={label}>Status<select className={field} value={String(draft.is_active)} onChange={(e) => set({ is_active: e.target.value === "true" })}><option value="true">Aktif</option><option value="false">Arsip</option></select></label>
       </div>

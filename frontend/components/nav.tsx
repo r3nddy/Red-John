@@ -7,10 +7,7 @@ const NAV: { href: string; label: string }[] = [
   { href: "/", label: "Game" },
   { href: "/pemindai", label: "Pemindai" },
   { href: "/lapor-cepat", label: "Lapor cepat" },
-  { href: "/learn", label: "Belajar" },
   { href: "/berita", label: "Berita" },
-  { href: "/act", label: "Lindungi diri" },
-  { href: "/tentang-keamanan", label: "Transparansi" },
   // ponytail: panel internal tanpa auth, hapus entri ini sebelum rilis.
   { href: "/admin", label: "Admin" },
   // ponytail: halaman uji API, hapus entri ini sebelum rilis.

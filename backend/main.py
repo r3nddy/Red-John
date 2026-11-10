@@ -1,4 +1,9 @@
-"""Aplikasi FastAPI Red John — rules + model ML lokal, tanpa API LLM/pihak ketiga."""
+"""Aplikasi FastAPI Red John — rules + model ML lokal.
+
+Jalur penilaian pesan tidak memakai LLM pihak ketiga. Pengecualian: generator draf
+soal kuis di `/api/quiz/admin/generate-daily` memanggil OpenRouter hanya saat admin
+menjalankannya; hasilnya tidak disimpan sampai admin menyetujui.
+"""
 
 from __future__ import annotations
 

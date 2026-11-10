@@ -4,11 +4,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from postgrest.exceptions import APIError
 
-from app import bot_outbox, quiz_daily, quiz_store
+from app import bot_outbox, quiz_daily, quiz_generate, quiz_store
 from app.news_harvester import store
-from app.quiz import (LeaderboardEntry, QuizAnswerIn, QuizAnswerOut, QuizLeaderboardOut,
-                      QuizLeaderboardQueuedOut, QuizQuestionAdmin, QuizQuestionCreate,
-                      QuizQuestionPublic, QuizQuestionUpdate)
+from app.quiz import (GenerateDailyOut, LeaderboardEntry, QuizAnswerIn, QuizAnswerOut,
+                      QuizLeaderboardOut, QuizLeaderboardQueuedOut, QuizQuestionAdmin,
+                      QuizQuestionCreate, QuizQuestionPublic, QuizQuestionUpdate)
 from app.schemas import BroadcastRequest
 
 router = APIRouter(prefix="/quiz", tags=["quiz"])
@@ -65,6 +65,22 @@ def translate_db_error(exc: APIError) -> HTTPException:
     if exc.code == "23514":
         return HTTPException(422, "Struktur soal tidak sesuai dengan tipe yang dipilih.")
     return HTTPException(502, f"Gagal mengakses database: {exc.code}")
+
+
+@router.post("/admin/generate-daily", response_model=GenerateDailyOut)
+async def generate_daily_questions(
+    _admin: Annotated[str, Depends(require_quiz_admin)],
+) -> GenerateDailyOut:
+    try:
+        return await quiz_generate.generate_daily()
+    except quiz_generate.QuizGenerateError as exc:
+        raise HTTPException(exc.status_code, str(exc)) from exc
+    except APIError as exc:
+        raise translate_db_error(exc) from exc
+    except Exception as exc:  # noqa: BLE001
+        # Tanpa ini error tak terduga jadi 500 tanpa header CORS → browser melaporkan
+        # "backend tidak dapat dihubungi" dan menyembunyikan penyebab aslinya.
+        raise HTTPException(500, f"Gagal menyusun soal: {type(exc).__name__}.") from exc
 
 
 @router.get("/questions", response_model=list[QuizQuestionPublic])

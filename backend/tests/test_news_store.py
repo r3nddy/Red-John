@@ -124,3 +124,30 @@ def test_insert_reports_batch_gagal_tidak_menghentikan_run(fake_store) -> None:
 
     inserted, duplicates, failed = asyncio.run(store.insert_reports(rows))
     assert (inserted, duplicates, failed) == (0, 50, 50)
+
+
+def test_generator_reports_pakai_kwarg_order_yang_didukung_postgrest() -> None:
+    """postgrest hanya menerima desc/nullsfirst; kwarg lain → TypeError → 500 saat generate."""
+    import asyncio
+
+    class _Table:
+        def select(self, *_): return self
+        def eq(self, *_): return self
+        def order(self, column, *, desc=False, nullsfirst=None, foreign_table=None): return self
+        def limit(self, *_): return self
+        async def execute(self):
+            return type("R", (), {"data": [{"id": "n1"}]})()
+
+    class _Not:
+        def is_(self, *_): return _Table()
+
+    class _Root(_Table):
+        not_ = _Not()
+
+    original = store._client
+    store._client = type("C", (), {"table": lambda self, _t: _Root()})()
+    try:
+        rows = asyncio.run(store.generator_reports(5))
+    finally:
+        store._client = original
+    assert rows == [{"id": "n1"}]
