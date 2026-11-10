@@ -101,12 +101,44 @@ async def get_question(question_id: str, *, active_only: bool = True) -> dict[st
     return result.data[0] if result.data else None
 
 
+async def next_round_number() -> int:
+    """Nomor soal berikutnya (max + 1). Default 1 bila tabel kosong."""
+    sb = store.get_store()
+    if sb is None:
+        raise RuntimeError("Supabase tidak dikonfigurasi.")
+    result = await (
+        sb.table(TABLE)
+        .select("round_number")
+        .order("round_number", desc=True)
+        .limit(1)
+        .execute()
+    )
+    return (result.data[0]["round_number"] if result.data else 0) + 1
+
+
 async def create_question(payload: QuizQuestionBase) -> dict[str, Any]:
     sb = store.get_store()
     if sb is None:
         raise RuntimeError("Supabase tidak dikonfigurasi.")
-    result = await sb.table(TABLE).insert(create_row(payload)).execute()
-    return result.data[0]
+
+    # Nomor eksplisit (buat/edit manual): insert langsung, tanpa retry.
+    if payload.round_number is not None:
+        result = await sb.table(TABLE).insert(create_row(payload)).execute()
+        return result.data[0]
+
+    # Nomor otomatis (draf generate): alokasikan server, retry pada konflik unique.
+    from postgrest.exceptions import APIError
+    for attempt in range(3):
+        candidate = payload.model_copy(
+            update={"round_number": await next_round_number()}
+        )
+        try:
+            result = await sb.table(TABLE).insert(create_row(candidate)).execute()
+            return result.data[0]
+        except APIError as exc:
+            if exc.code != "23505" or attempt == 2:
+                raise
+    raise RuntimeError("Alokasi nomor soal gagal.")
 
 
 async def update_question(question_id: str, payload: QuizQuestionBase) -> dict[str, Any] | None:

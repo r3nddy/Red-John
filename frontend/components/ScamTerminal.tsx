@@ -615,12 +615,6 @@ export default function ScamTerminal() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Link
-                    href="/act"
-                    className="px-4 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-xs font-semibold text-white border border-white/10 transition-colors"
-                  >
-                    Buka Playbook Mitigasi &rarr;
-                  </Link>
-                  <Link
                     href="/quiz"
                     className="px-4 py-2 rounded-lg bg-[#3ECF8E]/10 hover:bg-[#3ECF8E]/20 text-xs font-semibold text-[#3ECF8E] border border-[#3ECF8E]/20 transition-colors"
                   >

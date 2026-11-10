@@ -695,12 +695,6 @@ export default function LaporCepatPage() {
                       >
                         Pindai Pesan di Pemindai &rarr;
                       </Link>
-                      <Link
-                        href="/act"
-                        className="px-4 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-xs font-semibold text-white border border-white/10 transition-colors"
-                      >
-                        Lihat Playbook Mitigasi &rarr;
-                      </Link>
                     </div>
                   </div>
                 </div>

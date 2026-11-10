@@ -89,6 +89,7 @@ class QuizQuestionBase(BaseModel):
         return clean_text(value) if value is not None else None
 
 class QuizQuestionCreate(QuizQuestionBase):
+    round_number: int | None = Field(default=None, ge=1, le=10000)
     id: str | None = Field(default=None, min_length=1, max_length=80, pattern=r"^[a-z0-9-]+$")
 
 class QuizQuestionUpdate(QuizQuestionBase):
@@ -147,6 +148,18 @@ class QuizLeaderboardOut(BaseModel):
     resets_at: str
     server_now: str
     entries: list[LeaderboardEntry]
+
+
+class QuizDraftOut(BaseModel):
+    source_news_id: str
+    source_url: str
+    suggested_round_number: int
+    question: QuizQuestionCreate
+
+
+class GenerateDailyOut(BaseModel):
+    drafts: list[QuizDraftOut]
+    model: str
 
 
 class QuizLeaderboardQueuedOut(BaseModel):

@@ -245,7 +245,7 @@ export default function PemindaiPage() {
                 </h3>
               </div>
               <p className="text-xs text-[#A0A0A0] leading-relaxed">
-                Hasil deteksi langsung terhubung dengan Simulasi Kuis Kriminal untuk melatih insting waspada, Playbook Penanganan Darurat untuk langkah pelaporan rekening, serta Radar Berita Modus Terkini.
+                Hasil deteksi langsung terhubung dengan Simulasi Kuis Kriminal untuk melatih insting waspada serta Radar Berita Modus Terkini.
               </p>
               <div className="pt-2 text-[12px] text-[#3ECF8E] font-medium">
                 Modul Mitigasi Komprehensif &rarr;
